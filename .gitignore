@@ -1,0 +1,7 @@
+bin/
+cmsis/
+*.bat
+xbin/
+.vscode/
+.project
+.cproject
