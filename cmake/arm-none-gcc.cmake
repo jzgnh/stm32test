@@ -3,11 +3,23 @@ set(CMAKE_SYSTEM_NAME MMOS)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
 if(ARMGCC_HOME)
-set(CMAKE_C_COMPILER "${ARMGCC_HOME}/bin/arm-none-eabi-gcc.exe")
-set(CMAKE_CXX_COMPILER "${ARMGCC_HOME}/bin/arm-none-eabi-g++.exe")
 
-set(ARM_GCC_OBJCOPY "${ARMGCC_HOME}/bin/arm-none-eabi-objcopy.exe")
-set(ARM_GCC_OBJDUMP "${ARMGCC_HOME}/bin/arm-none-eabi-objdump.exe")
+set(_ARMCC_EXESUFFIX )
+if(CMAKE_EXECUTABLE_SUFFIX)
+    set(_ARMCC_EXESUFFIX ${CMAKE_EXECUTABLE_SUFFIX})
+elseif(CMAKE_HOST_WIN32)
+    set(_ARMCC_EXESUFFIX .exe)
+endif()
+file(TO_CMAKE_PATH "${ARMGCC_HOME}" ARMGCC_HOME)
+
+set(CMAKE_C_COMPILER "${ARMGCC_HOME}/bin/arm-none-eabi-gcc${_ARMCC_EXESUFFIX}")
+set(CMAKE_CXX_COMPILER "${ARMGCC_HOME}/bin/arm-none-eabi-g++${_ARMCC_EXESUFFIX}")
+
+set(ARM_GCC_OBJCOPY "${ARMGCC_HOME}/bin/arm-none-eabi-objcopy${_ARMCC_EXESUFFIX}")
+set(ARM_GCC_OBJDUMP "${ARMGCC_HOME}/bin/arm-none-eabi-objdump${_ARMCC_EXESUFFIX}")
+
+unset(_ARMCC_EXESUFFIX)
+
 else()
 set(CMAKE_C_COMPILER arm-none-eabi-gcc)
 set(CMAKE_CXX_COMPILER arm-none-eabi-g++)

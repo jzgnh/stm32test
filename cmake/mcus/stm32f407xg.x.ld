@@ -7,7 +7,8 @@
 **
 **  Abstract    : Linker script for STM32F407ZGTx Device from STM32F4 series
 **                      1024Kbytes FLASH
-**                      128+64Kbytes RAM
+**                      64Kbytes CCMRAM
+**                      128Kbytes RAM
 **
 **                Set heap size, stack size and stack location according
 **                to application requirements.
@@ -59,14 +60,13 @@ _Min_Stack_Size = 0x2000;	/* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-    FLASH	(rx)	: ORIGIN = 0x8000000,	LENGTH = 1M
+    FLASH	(rx)	: ORIGIN = 0x8000000,	LENGTH = 1024K
+    CCMRAM	(rwx)	: ORIGIN = 0x10000000,	LENGTH = 64K
     RAM	(rwx)	: ORIGIN = 0x20000000,	LENGTH = 128K
-    CCMRAM	(rx)	: ORIGIN = 0x10000000,	LENGTH = 64K
 }
 
 /* Highest address of the user mode stack */
-_estack = ORIGIN(RAM) + LENGTH(RAM)-1;	/* end of "RAM" Ram type memory */
-
+_estack = ORIGIN(RAM) + LENGTH(RAM) - 1;	/* end of "RAM" Ram type memory */
 
 /* Sections */
 SECTIONS

@@ -1,5 +1,7 @@
 bin/
 cmsis/
+cmsis
+*.swp
 *.bat
 xbin/
 .vscode/

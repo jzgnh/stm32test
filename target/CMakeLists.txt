@@ -13,3 +13,4 @@ endmacro()
 add_subdirectory(${MMOS_FAMILY}_HAL_Driver)
 
 add_library(MCUTarget ALIAS ${MMOS_FAMILY}_HAL_Driver)
+
