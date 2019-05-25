@@ -13,19 +13,21 @@ static UART_HandleTypeDef StdIOUart;
 __attribute__ ((constructor))
 static void _uart1_init()
 {
-    trace_puts("initial uart");
+    //trace_puts("initial uart");
 
 #if defined(_USA_HAL_UART) && _USA_HAL_UART!=0
+    __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_USART1_CLK_ENABLE();
 
     StdIOUart.Instance        = USART1;
 
-    StdIOUart.Init.BaudRate   = 115200;
+    StdIOUart.Init.BaudRate = 115200;
     StdIOUart.Init.WordLength = UART_WORDLENGTH_8B;
-    StdIOUart.Init.StopBits   = UART_STOPBITS_1;
-    StdIOUart.Init.Parity     = UART_PARITY_ODD;
-    StdIOUart.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
-    StdIOUart.Init.Mode       = UART_MODE_TX;
+    StdIOUart.Init.StopBits = UART_STOPBITS_1;
+    StdIOUart.Init.Parity = UART_PARITY_NONE;
+    StdIOUart.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    StdIOUart.Init.OverSampling = UART_OVERSAMPLING_16;
+    StdIOUart.Init.Mode = UART_MODE_TX_RX;
 
     HAL_UART_Init(&StdIOUart);
 
@@ -44,12 +46,11 @@ static void _fini_uart1()
 
 ////////////////////////////////////////////////////////////////
 
-int	fputc(int c, FILE *f)
+int __io_putchar(int c)
 {
 #if defined(_USA_HAL_UART) && _USA_HAL_UART!=0
-    trace_putc(c);
-    //HAL_UART_Transmit(&StdIOUart, (uint8_t*)&c, 1, HAL_MAX_DELAY);
-    HAL_UART_Transmit(&StdIOUart, (uint8_t*)&c, 1, 0);
+    //trace_putc(c);
+    HAL_UART_Transmit(&StdIOUart, (uint8_t*)&c, 1, HAL_MAX_DELAY);
 #else
     while (!READ_BIT(USART1->SR, USART_SR_TXE));
     USART1->DR = (unsigned char)c;

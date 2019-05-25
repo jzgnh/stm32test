@@ -1,6 +1,6 @@
 
 
-extern void __stack();
+extern void _estack();
 
 extern void Reset_Handler();
 
@@ -66,7 +66,7 @@ void _exit()         __attribute__ ((weak, alias("NMI_Handler")));
 
 static void const *const isvectors[256] __attribute__ ((section(".isr_vector"),used)) =
 {                                                           
-    __stack,                    // Top of Stack
+    _estack,                    // Top of Stack
     Reset_Handler,              // Reset Handler
     NMI_Handler,                // NMI Handler
     HardFault_Handler,          // Hard Fault Handler

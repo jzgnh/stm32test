@@ -24,10 +24,10 @@ include_directories("${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/Include")
 include_directories("${CMAKE_SOURCE_DIR}/cmsis/Core/Include")
 
 add_compile_options(-Wall -Wno-unused-function)
+add_definitions(-D_MMOS_${MMOS_FAMILY})
 
 
-add_subdirectory(libc)
-link_libraries(mc)
+add_subdirectory(libmmosc)
 
 add_subdirectory(target)
 
@@ -37,7 +37,7 @@ add_executable(${PROJECT_NAME} main.c printf.c Trace.c)
 
 target_link_options(${PROJECT_NAME} PRIVATE "-Wl,-Map=$<TARGET_FILE:${PROJECT_NAME}>.map")
 
-target_link_libraries(${PROJECT_NAME} startup MCUTarget)
+target_link_libraries(${PROJECT_NAME} startup mmosc MCUTarget)
 
 if (CMAKE_COMPILER_IS_GNUCC)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

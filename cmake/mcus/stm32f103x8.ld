@@ -1,4 +1,8 @@
 
+_Min_Heap_Size = 0x200;	/* required amount of heap  */
+_Min_Stack_Size = 0x400;	/* required amount of stack */
+
+
 /* Linker script to configure memory regions. 
  * Need modifying for a specific board. 
  *   FLASH.ORIGIN: starting address of flash
@@ -8,133 +12,124 @@
  */
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 0x10000 /* 64K */
-  RAM (rwx) : ORIGIN = 0x20000000, LENGTH = 0x5000 /* 20K */
+  FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 64K
+  RAM (rwx) : ORIGIN = 0x20000000, LENGTH = 20K
 }
 
-/* Linker script to place sections and symbol values. Should be used together
- * with other linker script that defines memory regions FLASH and RAM.
- * It references following symbols, which must be defined in code:
- *   Reset_Handler : Entry of reset handler
- * 
- * It defines following symbols, which code can use without definition:
- *   __rel_isrsize
- *   __initf_start
- *   __initf_end
- *   __finif_start
- *   __finif_end
- *   __etext
- *   __data_start__
- *   __data_end__
- *   __bss_start__
- *   __bss_end__
- *   __stack
- */
 ENTRY(Reset_Handler)
 
 SECTIONS
 {
-	.text :
-	{
-		KEEP(*(.isr_vector))
+    .text :
+    {
+        KEEP(*(.isr_vector))
         . = ALIGN(2048);
 
         HIDDEN(__rel_isrvector = .);
-		KEEP(*(.isr_vector2))
+        KEEP(*(.isr_vector2))
         __rel_isrsize = . - __rel_isrvector;
         . = ALIGN(2048);
 
-		*(.text*)
+        *(.text)
+        *(.text*)
 
-        __initf_start = .;
-        *(SORT(.init_array.*))
-		*(.init_array*)
-        __initf_end = .;
-        __finif_start = .;
-		*(.fini_array*)
-        *(SORT(.fini_array.*))
-        __finif_end = .;
+        KEEP (*(.init))
+        KEEP (*(.fini))
 
-		KEEP(*(.init))
-		KEEP(*(.fini))
+        *(.rodata*)
+    } > FLASH
 
-		*(.rodata*)
-	} > FLASH
+    .ARM.extab : 
+    {
+        *(.ARM.extab* .gnu.linkonce.armextab.*)
+    } > FLASH
 
-	.ARM.extab : 
-	{
-		*(.ARM.extab* .gnu.linkonce.armextab.*)
-	} > FLASH
+    __exidx_start = .;
+    .ARM.exidx :
+    {
+        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+    } > FLASH
+    __exidx_end = .;
+    
 
-	__exidx_start = .;
-	.ARM.exidx :
-	{
-		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-	} > FLASH
-	__exidx_end = .;
+    .preinit_array     :
+    {
+        . = ALIGN(4);
+        PROVIDE_HIDDEN (__preinit_array_start = .);
+        KEEP (*(.preinit_array*))
+        PROVIDE_HIDDEN (__preinit_array_end = .);
+        . = ALIGN(4);
+    } >FLASH
 
-	/* Location counter can end up 2byte aligned with narrow Thumb code but
-	   __etext is assumed by startup code to be the LMA of a section in RAM
-	   which must be 4byte aligned */
-	__etext = ALIGN (4);
+    .init_array :
+    {
+        . = ALIGN(4);
+        PROVIDE_HIDDEN (__init_array_start = .);
+        KEEP (*(SORT(.init_array.*)))
+        KEEP (*(.init_array*))
+        PROVIDE_HIDDEN (__init_array_end = .);
+        . = ALIGN(4);
+    } >FLASH
 
-	.data : AT (__etext)
-	{
-		__data_start__ = .;
-		*(.data*)
-
-		. = ALIGN(4);
-		/* preinit data */
-		PROVIDE_HIDDEN (__preinit_array_start = .);
-		KEEP(*(.preinit_array))
-		PROVIDE_HIDDEN (__preinit_array_end = .);
-
-		. = ALIGN(4);
-		/* init data */
-		PROVIDE_HIDDEN (__init_array_start = .);
-		KEEP(*(SORT(.init_array.*)))
-		KEEP(*(.init_array))
-		PROVIDE_HIDDEN (__init_array_end = .);
+    .fini_array :
+    {
+        . = ALIGN(4);
+        PROVIDE_HIDDEN (__fini_array_start = .);
+        KEEP (*(SORT(.fini_array.*)))
+        KEEP (*(.fini_array*))
+        PROVIDE_HIDDEN (__fini_array_end = .);
+        . = ALIGN(4);
+    } >FLASH
 
 
-		. = ALIGN(4);
-		/* finit data */
-		PROVIDE_HIDDEN (__fini_array_start = .);
-		KEEP(*(SORT(.fini_array.*)))
-		KEEP(*(.fini_array))
-		PROVIDE_HIDDEN (__fini_array_end = .);
+    /* Location counter can end up 2byte aligned with narrow Thumb code but
+       __etext is assumed by startup code to be the LMA of a section in RAM
+       which must be 4byte aligned */
+    __etext = ALIGN (4);
 
-		. = ALIGN(4);
-		/* All data end */
-		__data_end__ = .;
+    _sidata = LOADADDR(.data);
 
-	} > RAM
+    .data : AT (__etext)
+    {
+        . = ALIGN(4);
+        _sdata = .;        /* create a global symbol at data start */
+        *(.data)
+        *(.data*)
+        . = ALIGN(4);
+        
+        . = ALIGN(4);
+        _edata = .;        /* define a global symbol at data end */
 
-	.bss :
-	{
-		. = ALIGN(4);
-		__bss_start__ = .;
-		*(.bss*)
-		*(COMMON)
-		. = ALIGN(4);
-		__bss_end__ = .;
-	} > RAM
+    } > RAM
 
-	/* .stack_dummy section doesn't contains any symbols. It is only
-	 * used for linker to calculate size of stack sections, and assign
-	 * values to stack symbols later */
-	.stack_dummy (COPY):
-	{
-		*(.stack*)
-	} > RAM
+    .bss :
+    {
+        . = ALIGN(4);
+        _sbss = .;         /* define a global symbol at bss start */
+        __bss_start__ = _sbss;
+        *(.bss)
+        *(.bss*)
+        *(COMMON)
+        . = ALIGN(4);
+        _ebss = .;         /* define a global symbol at bss end */
+        __bss_end__ = _ebss;
+    } > RAM
 
-	/* Set stack top to end of RAM, and stack limit move down by
-	 * size of stack_dummy section */
-	PROVIDE_HIDDEN(__StackTop = ORIGIN(RAM) + LENGTH(RAM));
-	PROVIDE_HIDDEN(__StackLimit = __StackTop - SIZEOF(.stack_dummy));
-	PROVIDE(__stack = __StackTop);
-	
-	/* Check if data + heap + stack exceeds RAM limit */
-	ASSERT(__StackLimit >= LENGTH(RAM) - SIZEOF(.data) - SIZEOF(.bss), "region RAM overflowed with stack")
+    /* .stack_dummy section doesn't contains any symbols. It is only
+     * used for linker to calculate size of stack sections, and assign
+     * values to stack symbols later */
+    ._user_heap_stack :
+    {
+        . = ALIGN(8);
+        PROVIDE ( end = . );
+        PROVIDE ( _end = . );
+        . = . + _Min_Heap_Size;
+        . = . + _Min_Stack_Size;
+        . = ALIGN(8);
+    } >RAM
 
+    /* Set stack top to end of RAM, and stack limit move down by
+     * size of stack_dummy section */
+    PROVIDE_HIDDEN(__StackTop = ORIGIN(RAM) + LENGTH(RAM));
+    PROVIDE(_estack = __StackTop);
 }

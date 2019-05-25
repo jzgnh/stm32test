@@ -5,6 +5,9 @@ project(startup C ASM)
 set(STARTUP_SRC)
 set(SYSINIT_SRC)
 
+
+string(TOLOWER "${MMOS_CHIPID}" MMOS_CHIPID)
+
 if (MMOS_CHIPID)
   if(EXISTS "${PROJECT_SOURCE_DIR}/startup_${MMOS_CHIPID}.s")
     set(STARTUP_SRC "startup_${MMOS_CHIPID}.s")
@@ -42,5 +45,5 @@ if(NOT SYSINIT_SRC)
   set(SYSINIT_SRC sysinit.c)
 endif()
 
-add_library(${PROJECT_NAME} OBJECT ${STARTUP_SRC} ${SYSINIT_SRC} _start.c)
+add_library(${PROJECT_NAME} OBJECT ${STARTUP_SRC} ${SYSINIT_SRC})
 target_link_libraries(${PROJECT_NAME} MCUTarget)
