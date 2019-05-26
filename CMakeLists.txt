@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 
-set(MMOS_BOARD NUCLEO-F103RB CACHE STRING "Which board to build.")
+set(MMOS_BOARD TBB16-F103C8 CACHE STRING "Which board to build.")
 
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
@@ -24,12 +24,13 @@ include_directories("${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/Include")
 include_directories("${CMAKE_SOURCE_DIR}/cmsis/Core/Include")
 
 add_compile_options(-Wall -Wno-unused-function)
-add_definitions(-D_MMOS_${MMOS_FAMILY})
 
+include(Drivers/ConfigBSP.cmake)
 
 add_subdirectory(libmmosc)
 
 add_subdirectory(target)
+add_subdirectory(Drivers)
 
 add_subdirectory(startup)
 
@@ -37,7 +38,7 @@ add_executable(${PROJECT_NAME} main.c printf.c Trace.c)
 
 target_link_options(${PROJECT_NAME} PRIVATE "-Wl,-Map=$<TARGET_FILE:${PROJECT_NAME}>.map")
 
-target_link_libraries(${PROJECT_NAME} startup mmosc MCUTarget)
+target_link_libraries(${PROJECT_NAME} startup mmosc BSPTarget)
 
 if (CMAKE_COMPILER_IS_GNUCC)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
