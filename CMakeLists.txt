@@ -20,6 +20,8 @@ project(STM32Test C)
 
 set(CMAKE_VERBOSE_MAKEFILE YES)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
 include_directories("${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/Include")
 include_directories("${CMAKE_SOURCE_DIR}/cmsis/Core/Include")
 
@@ -34,15 +36,5 @@ add_subdirectory(Drivers)
 
 add_subdirectory(startup)
 
-add_executable(${PROJECT_NAME} main.c printf.c Trace.c)
 
-target_link_options(${PROJECT_NAME} PRIVATE "-Wl,-Map=$<TARGET_FILE:${PROJECT_NAME}>.map")
-
-target_link_libraries(${PROJECT_NAME} startup mmosc BSPTarget)
-
-if (CMAKE_COMPILER_IS_GNUCC)
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND "${ARM_GCC_OBJCOPY}" -O ihex $<TARGET_FILE:${PROJECT_NAME}> $<TARGET_FILE:${PROJECT_NAME}>.hex
-                COMMAND "${ARM_GCC_OBJDUMP}" -htrD $<TARGET_FILE:${PROJECT_NAME}> > $<TARGET_FILE:${PROJECT_NAME}>.rMap)
-endif()
-
+add_subdirectory(app)

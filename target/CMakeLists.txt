@@ -7,7 +7,7 @@ macro(SET_HAL_DRIVER_INC ProjName)
         "${PROJECT_SOURCE_DIR}/Inc"
         "${PROJECT_SOURCE_DIR}"
         "${PROJECT_BINARY_DIR}")
-    #target_compile_definitions(${ProjName} PUBLIC -D_MMOS_${MMOS_FAMILY})
+    target_compile_definitions(${ProjName} PUBLIC -DUSE_FULL_LL_DRIVER)
 endmacro()
 
 macro(GENERATE_HAL_CONF tfile)
