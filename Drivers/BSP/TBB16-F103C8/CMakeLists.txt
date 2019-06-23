@@ -1,0 +1,4 @@
+
+
+ADD_LIBRARY(BSPTarget OBJECT MX_MSP_Init.c)
+

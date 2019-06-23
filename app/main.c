@@ -14,18 +14,6 @@ static const unsigned int numbits[] = {
 
 static char buf[] = "abcdef";
 
-#ifndef LED_PIN
-#define LED_PIN        GPIO_PIN_12
-#endif
-
-#ifndef LED_GPIO_PORT
-#define LED_GPIO_PORT       GPIOB
-#endif
-
-#ifndef LED_CLK_ENABLE
-#define LED_CLK_ENABLE()    __HAL_RCC_GPIOB_CLK_ENABLE()
-#endif
-
 
 #define LED_Toggle()       HAL_GPIO_TogglePin(LED_GPIO_PORT, LED_PIN)
 
@@ -59,9 +47,9 @@ int main()
 	int i = 0;
 	int ss = 0x08;
 
-
-
     LED_Init();
+
+	bus_spi1->init(SPIBUS_MODE_MFRC522);
 
 	/*
 	TS_DATATypeDef tsdata;
@@ -85,7 +73,24 @@ int main()
 	//GPIOA->CRL = 0x11111111;
 	//GPIOA->ODR = 0x00000000;
 
+	do {		// flush logging
+		for (int ii=0;ii<35;ii++)
+			puts("                                ");
+	} while(0);
+
+
 	while (1) {
+
+		bus_spi1->cs(1);
+
+		int c1 = spi_rw(bus_spi1, i + (i>9 ? ('A'-10) : '0'));
+		int c2 = spi_rw(bus_spi1, 'C' + (i&0x01));
+
+		bus_spi1->cs(0);
+
+		printf("R %c %c \n", c1, c2);
+
+
 
 		HAL_Delay(180);
 		LED_Toggle();
@@ -93,7 +98,7 @@ int main()
 		//printf(" ");
 
 		HAL_Delay(200);
-		//LED_Toggle();
+		LED_Toggle();
 
 		/*
 		DS_Get(&tsdata);
@@ -103,7 +108,6 @@ int main()
 				WeekDay(tsdata.w));
 		// */
         printf("curr: %d  %ld\n", i, HAL_GetTick());
-		//puts(" ");
 		//printf("C");
         //trace_puts("111111111111111");
         //trace_puts(buf);
