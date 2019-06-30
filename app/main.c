@@ -12,7 +12,7 @@ static const unsigned int numbits[] = {
 };
 
 
-static char buf[] = "abcdef";
+// static char buf[] = "abcdef";
 
 
 #define LED_Toggle()       HAL_GPIO_TogglePin(LED_GPIO_PORT, LED_PIN)
@@ -42,6 +42,33 @@ static const char *const weekday[] = {
 #define WeekDay(i)  (weekday[i&0x07])
 
 
+char buf[512];
+char *ps = buf;
+char *pe = buf;
+
+void appendchar(char c)
+{
+	*pe = c;
+
+	if ( pe+1 == ps || (pe+1 == &buf[sizeof(buf)] && ps==0)) {
+		*pe = '|';
+	}
+	else {
+		if (&buf[sizeof(buf)] == ++pe)
+			pe = buf;
+	}
+}
+void appendstr0(const char *s)
+{
+	while (*s) appendchar(*s++);
+	//appendchar('\n');
+}
+void appendstr(const char *s)
+{
+	while (*s) appendchar(*s++);
+	appendchar('\n');
+}
+
 int main()
 {
 	int i = 0;
@@ -49,7 +76,7 @@ int main()
 
     LED_Init();
 
-	bus_spi1->init(SPIBUS_MODE_MFRC522);
+	//bus_spi1->init(SPIBUS_MODE_MFRC522);
 
 	/*
 	TS_DATATypeDef tsdata;
@@ -73,14 +100,28 @@ int main()
 	//GPIOA->CRL = 0x11111111;
 	//GPIOA->ODR = 0x00000000;
 
+	HAL_Delay(2000);
+
 	do {		// flush logging
 		for (int ii=0;ii<35;ii++)
 			puts("                                ");
 	} while(0);
 
 
+	USBInit();
+
+
+	while(1) {
+		if (pe!=ps) {
+			putchar(*ps++);
+			if (ps >= &buf[sizeof(buf)])
+				ps = buf;
+		}
+	}
+
 	while (1) {
 
+#if 0
 		bus_spi1->cs(1);
 
 		int c1 = spi_rw(bus_spi1, i + (i>9 ? ('A'-10) : '0'));
@@ -88,9 +129,9 @@ int main()
 
 		bus_spi1->cs(0);
 
-		printf("R %c %c \n", c1, c2);
+		printf("R %02Xc %02Xc \n", c1, c2);
 
-
+#endif
 
 		HAL_Delay(180);
 		LED_Toggle();

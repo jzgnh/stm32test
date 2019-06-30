@@ -9,10 +9,13 @@
 #include <stm32f1xx_hal_uart.h>
 #include <stm32f1xx_hal_gpio.h>
 #include <stm32f1xx_hal_cortex.h>
+#include <stm32f1xx_hal_pcd.h>
 
 #include <stm32f1xx_ll_bus.h>
 #include <stm32f1xx_ll_rcc.h>
 #include <stm32f1xx_ll_spi.h>
+
+#include <stm32f1xx_ll_usb.h>
 
 #define _IO_PUTCHAR_PROTOTYPE int __io_putchar(int c)
 #endif
@@ -24,10 +27,13 @@
 #include <stm32f4xx_hal_uart.h>
 #include <stm32f4xx_hal_gpio.h>
 #include <stm32f4xx_hal_cortex.h>
+#include <stm32f4xx_hal_pcd.h>
 
 #include <stm32f4xx_ll_bus.h>
 #include <stm32f4xx_ll_rcc.h>
 #include <stm32f4xx_ll_spi.h>
+
+#include <stm32f4xx_ll_usb.h>
 
 #define _IO_PUTCHAR_PROTOTYPE int __swbuf_r(struct _reent *reent, int c, FILE *f)
 #endif

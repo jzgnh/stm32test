@@ -22,6 +22,8 @@ set(CMAKE_VERBOSE_MAKEFILE YES)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
+# add_compile_options(-fshort-wchar)
+
 include_directories("${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/Include")
 include_directories("${CMAKE_SOURCE_DIR}/cmsis/Core/Include")
 

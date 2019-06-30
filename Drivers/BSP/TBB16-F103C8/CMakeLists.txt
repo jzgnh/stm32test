@@ -1,4 +1,7 @@
 
+project(BSPTarget C)
 
-ADD_LIBRARY(BSPTarget OBJECT MX_MSP_Init.c)
+file(GLOB SRCS RELATIVE "${PROJECT_SOURCE_DIR}" "*.h" "*.c")
+
+ADD_LIBRARY(BSPTarget OBJECT ${SRCS})
 

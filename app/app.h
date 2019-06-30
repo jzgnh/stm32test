@@ -24,6 +24,7 @@ void DS_Set(TS_DATATypeDef *);
 
 
 /**********************************************/
+/** SPI Driver **/
 
 #define BUS_OK          0
 #define BUS_BUSY        1
@@ -72,3 +73,11 @@ static inline int spi_rw(SPIBUS const *bus, int w) {
 
     return bus_spi1->read();
 }
+
+
+/**********************************************/
+/** USB Driver **/
+
+void USBInit();
+
+int USBIsReadey();

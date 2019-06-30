@@ -2,7 +2,12 @@
 
 #include "app.h"
 
-#include <assert.h>
+// #include <assert.h>
+
+#ifndef asssert
+#define assert(xx)
+#endif
+
 
 typedef
 struct {
@@ -53,7 +58,7 @@ DEFIN_SPI_BUS(bus_spi2, SPI2);
 
 ////////////////////////////////////////////////////////////////////
 __weak
-extern void LL_MSP_init(SPI_TypeDef *SPIx)
+extern void LL_SPI_MSP_init(SPI_TypeDef *SPIx)
 { }
 
 static int _spi_init(spictx ctx, int mode)
@@ -79,7 +84,7 @@ static int _spi_init(spictx ctx, int mode)
     LL_SPI_Init(ctx->inst, &SPI_Init);
     ctx->mode = mode;
 
-    LL_MSP_init(ctx->inst);
+    LL_SPI_MSP_init(ctx->inst);
     return BUS_OK;
 }
 static void _spi_deinit(spictx ctx)

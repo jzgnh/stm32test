@@ -10,3 +10,4 @@
 #define STDIO_UARTx         1
 #define STDIO_TX_GPIOPORT   A
 
+#define STDIO_TX_GPIO_PIN   9
