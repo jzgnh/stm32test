@@ -1,7 +1,15 @@
 
-#include "app.h"
+#include "mcuconfig.h"
 
 #include "usbd_def.h"
+
+
+#define appendchar      log_addc
+#define appendstr       log_adds
+#define appendstr0      log_adds0
+
+#define outdata log_data
+
 
 #define USBInst     USB
 
@@ -11,25 +19,24 @@ extern void LL_USB_MSP_init(USB_TypeDef *USBx)
 
 void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 {
-    LL_USB_MSP_init(USBInst);
+    if(pcdHandle->Instance==USBInst) {
+        __HAL_RCC_USB_CLK_ENABLE();
 
-    //HAL_NVIC_SetPriority(USB_HP_CAN1_TX_IRQn, 0, 0);
-    HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 0, 0);
-    //HAL_NVIC_SetPriority(USBWakeUp_IRQn, 1, 0);
-    //HAL_NVIC_EnableIRQ(USB_HP_CAN1_TX_IRQn);
-    HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
-    //HAL_NVIC_EnableIRQ(USBWakeUp_IRQn);
+        HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 0, 0);
+        HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
+    }
 }
+
+#define PCD0    hpcd_USB_FS
 
 PCD_HandleTypeDef PCD0 = {0};
 
-void USBInit()
+void MX_USB_DEVICE_Init()
 {
 
     PCD0.Instance = USBInst;
     PCD0.Init.dev_endpoints = 8;
     PCD0.Init.speed = PCD_SPEED_FULL;
-    PCD0.Init.ep0_mps = DEP0CTL_MPS_8;
     PCD0.Init.low_power_enable = DISABLE;
     PCD0.Init.lpm_enable = DISABLE;
     PCD0.Init.battery_charging_enable = DISABLE;
@@ -52,32 +59,15 @@ void USBInit()
     return;
 }
 
-void appendchar(const char c);
-void appendstr(const char *s);
-void appendstr0(const char *s);
-
-void outdata(void *d, int sz)
-{
-    static const uint8_t digits[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-    uint8_t *sdata = (uint8_t*)d;
-    for (int i=0;i<sz;++i) {
-        appendchar(digits[sdata[i]>>4]);
-        appendchar(digits[sdata[i]&0x0f]);
-        appendchar(' ');
-    }
-    appendchar('\n');
-}
-
 __ALIGN_BEGIN uint8_t USBD_FS_DeviceDesc[USB_LEN_DEV_DESC] __ALIGN_END =
 {
     USB_LEN_DEV_DESC,                       /*bLength */
     USB_DESC_TYPE_DEVICE,       /*bDescriptorType*/
-    0x00,                       /* bcdUSB */
-    0x02,
-    0x00,                        /*bDeviceClass*/
+    0x00, 0x02,                 /* bcdUSB */
+    0x00,                       /*bDeviceClass*/
     0x00,                       /*bDeviceSubClass*/
     0x00,                       /*bDeviceProtocol*/
-    0x20,                       /*bMaxPacketSize*/
+    0x40,                       /*bMaxPacketSize*/
     0x01, 0x1D,                 /*idVendor*/
     0x01, 0x10,                 /*idVendor*/
     0x00, 0x02,                 /*bcdDevice rel. 2.00*/
@@ -114,10 +104,16 @@ void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
     appendstr(__FUNCTION__);
 }
+
+static int issetAddr = 0;
 void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
     appendstr(__FUNCTION__);
-    PCD_SET_EP_TX_STATUS(USB, 0, USB_EP_TX_VALID);
+    if (!issetAddr) {
+        HAL_PCD_EP_Receive(&PCD0, 0, NULL, 0);
+    }
+    else
+        issetAddr = 0;
 }
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 {
@@ -130,6 +126,8 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
     {
     case USB_REQ_SET_ADDRESS: {           /* SET_ADDRESS */
         HAL_PCD_SetAddress(&PCD0, sdata[2]);
+        issetAddr  = 1;
+        //PCD_SET_EP_TX_STATUS(USB, 0, USB_EP_TX_STALL);
         HAL_PCD_EP_Transmit(&PCD0, 0, NULL, 0);
     }
     return;
@@ -153,7 +151,9 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
                 pp = (uint8_t*)("\x0E\x03" "M\0Y\0 \0D\0E\0V");
             }
             else if (sdata[2]==0x03) {
-                pp = (uint8_t*)("\x20\x03" "1\x002\x003\x004\x005\x006\x007\x008\x009\x000\x00A\x00B\x00C\x00D\x00E\x00f");
+                pp = (uint8_t*)("\x22\x03" "1\0" "2\0" "3\0" "4\0"
+                                "5\x0" "6\0" "7\0" "8\0" "9\0" "0\0" "A\0"
+                                "B\0" "C\0" "D\0" "E\0" "f");
             }
 
             if (pp && pp[0]>0) {
@@ -199,8 +199,8 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
 void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 {
     appendstr(__FUNCTION__);
-    HAL_PCD_EP_Open(&PCD0, 0x00, 0x20, EP_TYPE_CTRL);
-    HAL_PCD_EP_Open(&PCD0, 0x80, 0x20, EP_TYPE_CTRL);
+    HAL_PCD_EP_Open(&PCD0, 0x00, 0x40, EP_TYPE_CTRL);
+    HAL_PCD_EP_Open(&PCD0, 0x80, 0x40, EP_TYPE_CTRL);
 }
 void HAL_PCD_SuspendCallback(PCD_HandleTypeDef *hpcd)
 {
@@ -226,3 +226,4 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
 {
     appendstr(__FUNCTION__);
 }
+

@@ -5,6 +5,8 @@
 
 #include "app.h"
 
+#include "usb_device.h"
+
 
 static const unsigned int numbits[] = {
 	0x77, 0x14, 0xB3, 0xB6, 0xD4, 0xE6, 0xE7, 0x34,
@@ -42,33 +44,6 @@ static const char *const weekday[] = {
 #define WeekDay(i)  (weekday[i&0x07])
 
 
-char buf[512];
-char *ps = buf;
-char *pe = buf;
-
-void appendchar(char c)
-{
-	*pe = c;
-
-	if ( pe+1 == ps || (pe+1 == &buf[sizeof(buf)] && ps==0)) {
-		*pe = '|';
-	}
-	else {
-		if (&buf[sizeof(buf)] == ++pe)
-			pe = buf;
-	}
-}
-void appendstr0(const char *s)
-{
-	while (*s) appendchar(*s++);
-	//appendchar('\n');
-}
-void appendstr(const char *s)
-{
-	while (*s) appendchar(*s++);
-	appendchar('\n');
-}
-
 int main()
 {
 	int i = 0;
@@ -100,23 +75,13 @@ int main()
 	//GPIOA->CRL = 0x11111111;
 	//GPIOA->ODR = 0x00000000;
 
-	HAL_Delay(2000);
 
-	do {		// flush logging
-		for (int ii=0;ii<35;ii++)
-			puts("                                ");
-	} while(0);
-
-
-	USBInit();
-
+	MX_USB_DEVICE_Init();
 
 	while(1) {
-		if (pe!=ps) {
-			putchar(*ps++);
-			if (ps >= &buf[sizeof(buf)])
-				ps = buf;
-		}
+		if ((i=log_getc())>0)
+			putchar(i);
+
 	}
 
 	while (1) {
@@ -141,6 +106,7 @@ int main()
 		HAL_Delay(200);
 		LED_Toggle();
 
+
 		/*
 		DS_Get(&tsdata);
         printf("TIME: %02X-%02X-%02X %02X:%02X:%02X %s\n",
@@ -148,7 +114,7 @@ int main()
 				tsdata.H, tsdata.M, tsdata.S,
 				WeekDay(tsdata.w));
 		// */
-        printf("curr: %d  %ld\n", i, HAL_GetTick());
+        //printf("curr: %d  %ld\n", i, HAL_GetTick());
 		//printf("C");
         //trace_puts("111111111111111");
         //trace_puts(buf);

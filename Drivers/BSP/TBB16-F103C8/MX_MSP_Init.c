@@ -4,6 +4,8 @@
 void HAL_MspInit(void)
 {
 	__HAL_RCC_AFIO_CLK_ENABLE();
+	__HAL_RCC_PWR_CLK_ENABLE();
+
     __HAL_AFIO_REMAP_SWJ_NOJTAG();
 }
 
@@ -38,24 +40,5 @@ void LL_SPI_MSP_init(SPI_TypeDef *SPIx)
         GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     }
-}
-
-
-void LL_USB_MSP_init(USB_TypeDef *USBx)
-{
-    __HAL_RCC_USB_CLK_ENABLE();
-    GPIO_InitTypeDef  GPIO_InitStruct = {0};
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-
-    GPIO_InitStruct.Pin = GPIO_PIN_11;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-#if 1
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pin = GPIO_PIN_12;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-#endif
 }
 

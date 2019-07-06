@@ -4,7 +4,6 @@ cmake_policy(SET CMP0079 NEW)
 
 set(_DRIVER_ROOTDIR "${CMAKE_CURRENT_LIST_DIR}")
 
-
 if(EXTRA_COMPONENTS)
     include_directories("${CMAKE_CURRENT_LIST_DIR}/Components/Inc")
     foreach(COMPNAME ${EXTRA_COMPONENTS})
@@ -29,6 +28,9 @@ if(NOT TARGET BSPTarget)
 endif()
 
 target_link_libraries(BSPTarget MCUTarget)
+if(EXTRA_COMPONENTS)
+    target_link_libraries(BSPTarget ${EXTRA_COMPONENTS})
+endif()
 
 target_include_directories(BSPTarget PUBLIC
         "${CMAKE_CURRENT_LIST_DIR}/Components/Inc")

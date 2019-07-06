@@ -1,3 +1,9 @@
 
 
 set(EXTRA_COMPONENTS)
+
+set(STM32_USB_DEV_CLS HID)
+
+list(APPEND EXTRA_COMPONENTS STM32_USB_Device_Library)
+
+include_directories("${CMAKE_CURRENT_LIST_DIR}")
