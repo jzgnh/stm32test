@@ -5,6 +5,8 @@
 
 #include "app.h"
 
+
+
 #include "usb_device.h"
 
 
@@ -44,6 +46,7 @@ static const char *const weekday[] = {
 #define WeekDay(i)  (weekday[i&0x07])
 
 
+extern int rc522_main();
 int main()
 {
 	int i = 0;
@@ -51,7 +54,9 @@ int main()
 
     LED_Init();
 
-	//bus_spi1->init(SPIBUS_MODE_MFRC522);
+	bus_spi1->init(SPIBUS_MODE_MFRC522);
+
+	return rc522_main();
 
 	/*
 	TS_DATATypeDef tsdata;
@@ -76,7 +81,7 @@ int main()
 	//GPIOA->ODR = 0x00000000;
 
 
-	MX_USB_DEVICE_Init();
+	// MX_USB_DEVICE_Init();
 
 	while(1) {
 		if ((i=log_getc())>0)

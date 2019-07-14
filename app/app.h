@@ -64,15 +64,16 @@ extern SPIBUS const *const bus_spi3;
 
 
 static inline int spi_rw(SPIBUS const *bus, int w) {
-    while(!bus_spi1->canwrite())
+    while(!bus->canwrite())
         continue;
-    bus_spi1->write(w);
+    bus->write(w);
 
-    while(!bus_spi1->canread())
+    while(!bus->canread())
         continue;
 
     return bus_spi1->read();
 }
+
 
 
 /**********************************************/
